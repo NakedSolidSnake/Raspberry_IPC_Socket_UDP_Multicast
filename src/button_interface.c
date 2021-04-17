@@ -21,6 +21,22 @@ const char *led_commands[] =
     "LED OFF"
 };
 
+static void wait_press(Button_Data *button)
+{
+    while (true)
+    {
+        if (!button->interface->Read(button->object))
+        {
+            usleep(_1ms * 100);
+            break;
+        }
+        else
+        {
+            usleep(_1ms);
+        }
+    }
+}
+
 bool Button_Run(UDP_Sender *sender, Button_Data *button)
 {
     int state = 0;
@@ -33,20 +49,8 @@ bool Button_Run(UDP_Sender *sender, Button_Data *button)
 
     while (true)
     {
-        while (1)
-        {
-            if (!button->interface->Read(button->object))
-            {
-                usleep(_1ms * 100);
-                state ^= 0x01;
-                break;
-            }
-            else
-            {
-                usleep(_1ms);
-            }
-        }
-
+        wait_press(button);
+        state ^= 0x01;
         UDP_Multicast_Sender_Send(sender, led_commands[state], strlen(led_commands[state]));
     }
 
