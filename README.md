@@ -552,12 +552,11 @@ $ ./kill_process.sh
 ```
 
 ## Conclusão
-O broadcast é uma boa solução para enviar mensagens de uma única vez para os interessados, porém dependendo da frequência em que essa mensagem é disseminada pode causar congestionamento na rede, causando uma queda de desempenho, e enviando mensagens para máquinas que não estejam interessados nesses dados. Para resolver esse problema existe um modo de envio conhecido como Multicast que será abordado no próximo artigo.
+O multicast é uma boa solução para enviar mensagens de uma única vez para os interessados, diferente do broadcast somente os registrados irão receber as mensagens, evitando assim o congestionamento do tráfego.
 
-O Multicast se assemelha com o padrão arquitetural Publish/Subscribe
 
 ## Referência
-* [Link do projeto completo](https://github.com/NakedSolidSnake/Raspberry_IPC_Socket_UDP)
+* [Link do projeto completo](https://github.com/NakedSolidSnake/Raspberry_IPC_Socket_UDP_Multicast)
 * [Mark Mitchell, Jeffrey Oldham, and Alex Samuel - Advanced Linux Programming](https://www.amazon.com.br/Advanced-Linux-Programming-CodeSourcery-LLC/dp/0735710430)
 * [fork, exec e daemon](https://github.com/NakedSolidSnake/Raspberry_fork_exec_daemon)
 * [biblioteca hardware](https://github.com/NakedSolidSnake/Raspberry_lib_hardware)
