@@ -7,11 +7,13 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-bool UDP_Receiver_Init(UDP_Receiver *receiver)
+bool UDP_Multicast_Receiver_Init(UDP_Receiver *receiver)
 {
     bool status = false;
+    int yes = 1;
     struct sockaddr_in server_addr;
     struct ip_mreq multicast;
+
 
     do
     {
@@ -27,8 +29,7 @@ bool UDP_Receiver_Init(UDP_Receiver *receiver)
         server_addr.sin_family = AF_INET;
         server_addr.sin_addr.s_addr = INADDR_ANY;
         server_addr.sin_port = htons(receiver->port);        
-
-        int yes = 1;
+        
         if (setsockopt(receiver->socket, SOL_SOCKET, SO_REUSEADDR, (void*)&yes, sizeof(yes)) < 0)
             break;
 
@@ -48,7 +49,7 @@ bool UDP_Receiver_Init(UDP_Receiver *receiver)
     return status;
 }
 
-bool UDP_Receiver_Run(UDP_Receiver *receiver, void *user_data)
+bool UDP_Multicast_Receiver_Run(UDP_Receiver *receiver, void *user_data)
 {
     bool status = false;
     struct sockaddr_in client_addr;

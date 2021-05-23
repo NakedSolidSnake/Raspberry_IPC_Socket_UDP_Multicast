@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 
     UDP_Sender sender = 
     {
-        .hostname = "232.1.1.1",
+        .hostname = "239.192.1.1",
         .port  = "1234"
     };
 

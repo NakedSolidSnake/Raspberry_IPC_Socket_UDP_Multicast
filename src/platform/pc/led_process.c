@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
         .buffer_size = BUFFER_SIZE,
         .port = 1234,
         .on_receive_message = on_receive_message,
-        .multicast_group = "232.1.1.1"
+        .multicast_group = "239.192.1.1"
     };
 
     LED_Data led = 

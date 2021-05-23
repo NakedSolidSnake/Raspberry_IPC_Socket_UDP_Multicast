@@ -16,13 +16,13 @@ bool LED_Run(UDP_Receiver *receiver, LED_Data *led)
 	if(led->interface->Init(led->object) == false)
 		return false;
 
-	if(UDP_Receiver_Init(receiver) == false) 
+	if(UDP_Multicast_Receiver_Init(receiver) == false) 
 		return false;
 
 
 	while(true)
 	{
-		UDP_Receiver_Run(receiver, led);
+		UDP_Multicast_Receiver_Run(receiver, led);
 	}
 
 	return false;	
