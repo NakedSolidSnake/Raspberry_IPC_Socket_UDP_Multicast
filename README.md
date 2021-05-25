@@ -36,13 +36,13 @@
 * [Referência](#referência)
 
 ## Introdução
-O UDP no modo broadcast permite enviar mensagens para todas as máquinas conectadas na rede de uma única vez, porém essa forma de envio pode pejudicar o desempenho da rede dependendo do tamanho e da frequência da mensagem enviada, para contornar esses problemas existe um modo conhecido como multicast, que é parecido com o broadcast mas envia a mensagem somente para as máquinas que estejam interessadas nesse conteúdo, dessa forma evita-se que haja um congestionamento na rede devido a replicação de mensagens para máquinas não desejadas(broadcast). Para que as máquinas interessadas na mensagem transmitida, essas máquinas deverão se cadastrar em um grupo conhecido como IP multicast para que possam apartir desse registro receberem as mensagens.
+O UDP no modo broadcast permite enviar mensagens para todas as máquinas conectadas na rede de uma única vez, porém essa forma de envio pode prejudicar o desempenho da rede dependendo do tamanho e da frequência da mensagem enviada, para contornar esses problemas existe um modo conhecido como _multicast_, que é parecido com o _broadcast_ mas envia a mensagem somente para as máquinas que estejam interessadas nesse conteúdo, dessa forma evita-se que haja um congestionamento na rede devido a replicação de mensagens para máquinas não interessadas. Para que as máquinas interessadas na mensagem transmitida, essas máquinas deverão se cadastrar em um grupo conhecido como IP _multicast_ para que possam a partir desse registro receberem as mensagens.
 
 ## Endereço Multicast
-Para determinar o endereço multicast é necessário conhecer as classes de IP que são separadas em classes A, B, C, D e E. Para modo multicast foi reservado a classe D que é dedicado exclusivamente para esse propósito, possui um range de 224.0.0.0 até 239.255.255.255, dessa forma o emissor pode enviar para qualquer um desses endereços.
+Para determinar o endereço _multicast_ é necessário conhecer as classes de IP que são separadas em classes A, B, C, D e E. Para modo _multicast_ foi reservado a classe D que é dedicado exclusivamente para esse propósito, possuindo um _range_ de 224.0.0.0 até 239.255.255.255, dessa forma o emissor pode enviar para qualquer um desses endereços.
 
 ## Representação do Multicast na rede
-Quando uma mensagem multicast é enviada as máquinas registradas irão receber essas mensagens. Para ilustrar, o exemplo representa uma mensagem multicast enviada.
+Quando uma mensagem _multicast_ é enviada as máquinas registradas irão receber essas mensagens. Para ilustrar, o exemplo representa a transmissão de uma mensagem _multicast_.
 
 <p align="center">
 <img src="https://thumbs.gfycat.com/AfraidUnitedHydatidtapeworm-small.gif">
@@ -52,12 +52,12 @@ Na imagem é possível notar que as mensagem chegam somente nas máquinas intere
 
 
 ## Selecionando o endereço multicast
-Para selecionar o endereço de multicast para aplicação podemos pesquisar no site [www.iana.org](http://www.iana.org/assignments/multicast-addresses/multicast-addresses.xhtml), que apresenta a finalidade de cada range.
+Para selecionar o endereço de _multicast_ para aplicação podemos pesquisar no site [www.iana.org](http://www.iana.org/assignments/multicast-addresses/multicast-addresses.xhtml), que apresenta a finalidade de cada _range_.
 
-De acordo com as recomendações é selecionado o intervalo 232.192.0.0/24, que é reservado para uso privado, dentro desse range é selecionado o 239.192.1.1 como endereço do grupo multicast para a aplicação.
+De acordo com as recomendações, é selecionado o intervalo 232.192.0.0/24, sendo esse reservado para aplicações de uso privado, dentro desse _range_ é selecionado o 239.192.1.1 como endereço do grupo _multicast_ para a aplicação.
 
 ## Preparação do Ambiente
-Antes de apresentarmos o exemplo, primeiro precisaremos instalar algumas ferramentas para auxiliar na análise da comunicação. As ferramentas necessárias para esse artigo são o tcpdump e o netcat(nc), para instalá-las basta executar os comandos abaixo:
+Antes de apresentar o exemplo, primeiro é necessário instalar algumas ferramentas para auxiliar na análise da comunicação. As ferramentas necessárias para esse artigo são o **tcpdump** e o **netcat(nc)**, para instalá-las basta executar os comandos abaixo:
 
 ```c
 sudo apt-get update
@@ -70,25 +70,25 @@ sudo apt-get install tcpdump
 ```
 
 ## netcat 
-O netcat é uma ferramenta capaz de interagir com conexões UDP e TCP, podendo abrir conexões, ouvindo como um servidor, ou com cliente enviando mensagens para um servidor.
+O _netcat_ é uma ferramenta capaz de interagir com conexões UDP e TCP, podendo abrir conexões, ouvindo como um servidor, ou como cliente enviando mensagens para um servidor.
 
 ## tcpdump
 O tcpdump é uma ferramenta capaz de monitorar o tráfego de dados em uma dada interface como por exemplo eth0, com ele é possível analisar os pacotes que são recebido e enviados.
 
 ## Implementação
 
-Para demonstrar o uso desse IPC, iremos utilizar o modelo Cliente/Servidor, onde o processo Cliente(_button_process_) vai enviar uma mensagem via broadcast para o Servidor(_led_process_) vai ler a mensagem, e verificar se corresponde com os comandos cadastrados internamente e aplicar o comando caso seja válido. 
+Para demonstrar o uso desse IPC, é adotado o modelo Cliente/Servidor, onde o processo Cliente(_button_process_) vai enviar uma mensagem via multicast para o servidor(_led_process_) que vai ler a mensagem, e verificar se corresponde com os comandos cadastrados internamente e processar o comando caso seja válido. 
 
 ## Biblioteca
 A biblioteca criada permite uma fácil criação do servidor, sendo o servidor orientado a eventos, ou seja, fica aguardando as mensagens chegarem.
 
 ### udp_multicast_receiver.h
-Primeiramente criamos um callback responsável por eventos de recebimento, essa função será chamada quando houver esse evento.
+Primeiramente é criado um _callback_ responsável pelo tratamento de eventos de recebimento, essa função será chamada quando houver esse evento.
 ```c
 typedef void (*Event)(const char *buffer, size_t buffer_size, void *data);
 ```
 
-Criamos também um contexto que armazena os parâmetros utilizados pelo servidor, sendo o socket para armazenar a instância criada, port que recebe o número que corresponde onde o serviço será disponibilizado, buffer que aponta para a memória alocada previamente pelo usuário, buffer_size o representa o tamanho do buffer, o callback para recepção da mensagem e o endereço do grupo multicast
+É criado também um contexto que armazena os parâmetros utilizados pelo servidor, sendo o _socket_ para armazenar a instância criada, _port_ que recebe o número que corresponde onde o serviço será disponibilizado, _buffer_ que aponta para a memória alocada previamente pelo usuário, *buffer_size* o representa o tamanho do _buffer_, o _callback_ para recepção da mensagem e o endereço do grupo _multicast_
 
 ```c
 typedef struct 
@@ -106,14 +106,14 @@ Essa função inicializa o servidor com os parâmetros do contexto
 ```c
 bool UDP_Multicast_Receiver_Init(UDP_Receiver *receiver);
 ```
-Essa função aguarda uma mensagem publicada no grupo multicast pelo cliente.
+Essa função aguarda uma mensagem publicada no grupo _multicast_ pelo cliente.
 ```c
 bool UDP_Multicast_Receiver_Run(UDP_Receiver *receiver, void *user_data);
 ```
 
 ### udp_multicast_receiver.c
 
-No UDP_Multicast_Receiver_Init definimos algumas variáveis para auxiliar na inicialização do servidor, sendo uma variável booleana que representa o estado da inicialização do servidor, uma variável do tipo inteiro para habilitar o reuso da porta caso o servidor precise reiniciar, uma estrutura sockaddr_in que é usada para configurar o servidor para se comunicar através da rede e uma estrutura utilizada para o registro do servidor no grupo multicast.
+No *UDP_Multicast_Receiver_Init* é definido algumas variáveis para auxiliar na inicialização do servidor, sendo uma variável booleana que representa o estado da inicialização do servidor, uma variável do tipo inteiro para habilitar o reuso da porta caso o servidor precise reiniciar, uma estrutura sockaddr_in que é usada para configurar o servidor para se comunicar através da rede e uma estrutura utilizada para o registro do servidor no grupo _multicast_.
 
 ```c
 bool status = false;
@@ -122,19 +122,19 @@ struct sockaddr_in server_addr;
 struct ip_mreq multicast;
 ```
 
-Para realizar a inicialização é criado um dummy do while, para que quando houver falha em qualquer uma das etapas, irá sair da função com status de erro, nesse ponto verificamos se o contexto, o buffer e se o tamanho do buffer foi inicializado, sendo sua inicialização de responsabilidade do usuário
+Para realizar a inicialização é criado um _dummy do while_, para que quando houver falha em qualquer uma das etapas, irá sair da função com status de erro, nesse ponto é verificado se o contexto, o _buffer_ e se o tamanho do _buffer_ foi inicializado, sendo sua inicialização de responsabilidade do usuário
 
 ```c
 if(!receiver || !receiver->buffer || !receiver->buffer_size)
     break;
 ```
-Criamos um endpoint com o perfil de se conectar via protocolo IPv4(AF_INET), do tipo datagram que caracteriza o UDP(SOCK_DGRAM), o último parâmetro pode ser 0 nesse caso.
+É criado um _endpoint_ com o perfil de se conectar via protocolo IPv4(AF_INET), do tipo _datagram_ que caracteriza o UDP(SOCK_DGRAM), o último parâmetro pode ser 0 nesse caso.
 ```c
 receiver->socket = socket(AF_INET, SOCK_DGRAM, 0);
 if(receiver->socket < 0)
     break;
 ```
-Preenchemos a estrutura com parâmetros fornecidos pelo usuário como em qual porta que o serviço vai rodar.
+A estrutura é preenchida com parâmetros fornecidos pelo usuário como em qual porta que o serviço vai rodar.
 ```c
 memset(&server_addr, 0, sizeof(server_addr));
 
@@ -143,18 +143,18 @@ server_addr.sin_addr.s_addr = INADDR_ANY;
 server_addr.sin_port = htons(receiver->port);
 ```
 
-Aqui permitimos o reuso do socket caso necessite reiniciar o serviço
+Aqui é habilitado o reuso do _socket_ caso necessite reiniciar o serviço
 ```c
 if (setsockopt(receiver->socket, SOL_SOCKET, SO_REUSEADDR, (void*)&yes, sizeof(yes)) < 0)
     break;
 ```
-Aplicamos as configurações ao socket criado e atribuimos true na variável status
+É aplicada as configurações ao _socket_ criado
 ```c
 if (bind(receiver->socket, (const struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
     break;
 
 ```
-Registramos o servidor no grupo multicast
+O servidor é registrado no grupo multicast e é atribuído _true_ na variável _status_
 ```c
 multicast.imr_multiaddr.s_addr = inet_addr(receiver->multicast_group);
 multicast.imr_interface.s_addr = htonl(INADDR_ANY);
@@ -164,7 +164,7 @@ if(setsockopt(receiver->socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, (void *)&multicas
 status = true;
 ```
 
-Na função UDP_Multicast_Receiver_Run declaramos algumas variáveis para receber as mensagens por meio do multicast
+Na função *UDP_Multicast_Receiver_Run* é declarada algumas variáveis para receber as mensagens por meio do _multicast_
 
 ```c
 bool status = false;
@@ -172,7 +172,7 @@ struct sockaddr_in client_addr;
 socklen_t len = sizeof(client_addr);
 size_t read_size;
 ```
-Verificamos se o socket é válido e aguardamos uma mensagem do cliente, repassamos a mensagem para o callback realizar o tratamento de acordo com a aplicação do cliente, e retornamos o estado.
+É verificado se o _socket_ é válido e é aguardada uma mensagem no canal de _multicast_, a mensagem é repassada para o _callback_ para realizar o tratamento de acordo com a aplicação do cliente, e é retornado o _status_.
 ```c
 if(receiver->socket > 0)
 {
@@ -188,7 +188,7 @@ return status;
 ```
 
 ### udp_multicast_sender.h
-Criamos também um contexto que armazena os parâmetros utilizados pelo cliente, sendo o socket para armazenar a instância criada, hostname é o ip que da máquina que vai enviar as mensagens e o port que recebe o número que corresponde qual o serviço deseja consumir
+É criado também um contexto que armazena os parâmetros utilizados pelo cliente, sendo o _socket_ para armazenar a instância criada, _hostname_ é o _ip_ do canal _multicast_ que vai ser enviado as mensagens e o _port_ que recebe o número que corresponde onde o serviço vai ser disponibilizado
 
 ```c
 typedef struct 
@@ -204,13 +204,13 @@ Inicializa o cliente com os parâmetros do descritor
 bool UDP_Multicast_Sender_Init(UDP_Sender *sender);
 ```
 
-Envia mensagem para o grupo multicast baseado nos parâmetros do descritor.
+Envia mensagem para o grupo _multicast_ baseado nos parâmetros do descritor.
 ```c
 bool UDP_Multicast_Sender_Send(UDP_Sender *sender, const char *message, size_t message_size);
 ```
 ### udp_multicast_sender.c
 
-Na função UDP_Multicast_Sender_Init verificamos se o contexto foi iniciado, configuramos o socket como UDP e habilitamos o envio no modo multicast
+Na função *UDP_Multicast_Sender_Init* é verificado se o contexto foi iniciado, o _socket_ é configurado como UDP e é habilitado o envio no modo _multicast_
 
 ```c
 int multicast_enable;
@@ -234,21 +234,21 @@ do
 return status;
 ```
 
-Na função UDP_Multicast_Sender_Send definimos algumas variáveis para auxiliar na comunicação com o servidor, sendo uma variável booleana que representa o estado de envio para o servidor, uma estrutura sockaddr_in que é usada para configurar o servidor no qual será enviado as mensagens e uma variável de quantidade de dados enviados.
+Na função *UDP_Multicast_Sender_Send* é declarada algumas variáveis para auxiliar na comunicação com o servidor, sendo uma variável booleana que representa o estado de envio para o servidor, uma estrutura sockaddr_in que é usada para configurar o servidor no qual será enviado as mensagens e uma variável de quantidade de dados enviados.
 
 ```c
 bool status = false;
 struct sockaddr_in server;
 ssize_t send_len;
 ```
-Parâmetrizamos a estrutura com os dados do servidor
+A estrutura é parametrizada com os dados do servidor
 ```c
 memset(&server, 0, sizeof(server));
 server.sin_family = AF_INET;
 server.sin_addr.s_addr = inet_addr(sender->hostname);
 server.sin_port = htons(atoi(sender->port));
 ```
-Realizamos o envio da mensagem para o servidor
+Realiza o envio da mensagem para o canal _multicast_
 ```c
 send_len = sendto(sender->socket, message, message_size, 0, (struct sockaddr *)&server, sizeof(server));
   if(send_len == message_size)
@@ -263,13 +263,13 @@ Aplicação é composta por três executáveis sendo eles:
 
 ### *launch_processes*
 
-No _main_ criamos duas variáveis para armazenar o PID do *button_process* e do *led_process*, e mais duas variáveis para armazenar o resultado caso o _exec_ venha a falhar.
+No _main_ é criada duas variáveis para armazenar o PID do *button_process* e do *led_process*, e mais duas variáveis para armazenar o resultado caso o _exec_ venha a falhar.
 ```c
 int pid_button, pid_led;
 int button_status, led_status;
 ```
 
-Em seguida criamos um processo clone, se processo clone for igual a 0, criamos um _array_ de *strings* com o nome do programa que será usado pelo _exec_, em caso o _exec_ retorne, o estado do retorno é capturado e será impresso no *stdout* e aborta a aplicação. Se o _exec_ for executado com sucesso o programa *button_process* será carregado. 
+Em seguida é criado um processo clone, se processo clone for igual a 0, é criado um _array_ de *strings* com o nome do programa que será usado pelo _exec_, em caso o _exec_ retorne, o estado do retorno é capturado e será impresso no *stdout* e aborta a aplicação. Se o _exec_ for executado com sucesso o programa *button_process* será carregado. 
 ```c
 pid_button = fork();
 
@@ -299,7 +299,7 @@ if(pid_led == 0)
 ```
 
 ## *button_interface*
-Definimos uma lista de comandos que iremos enviar
+É definida uma lista de comandos que para o envio
 ```c
 const char *led_commands[] = 
 {
@@ -307,7 +307,7 @@ const char *led_commands[] =
     "LED OFF"
 };
 ```
-A implementação do Button_Run ficou simples, onde realizamos a inicialização do interface de botão e ficamos em loop aguardando o pressionamento do botão para alterar o estado da variável e enviar a mensagem para o servidor
+A implementação do Button_Run ficou simples, onde é realizada a inicialização do interface de botão e fica em loop aguardando o pressionamento do botão para alterar o estado da variável e enviar a mensagem para o canal multicast
 ```c
 bool Button_Run(UDP_Sender *sender, Button_Data *button)
 {
@@ -330,7 +330,7 @@ bool Button_Run(UDP_Sender *sender, Button_Data *button)
 }
 ```
 ## *led_interface*
-A implementação do LED_Run ficou simplificada, realizamos a inicialização da interface de LED, do servidor e ficamos em loop aguardando o recebimento de uma mensagem.
+A implementação do LED_Run ficou simplificada, é realizada a inicialização da interface de LED, do servidor e fica em loop aguardando o recebimento de uma mensagem.
 ```c
 bool LED_Run(UDP_Receiver *receiver, LED_Data *led)
 {
@@ -352,7 +352,7 @@ bool LED_Run(UDP_Receiver *receiver, LED_Data *led)
 ```
 
 ## *button_process*
-A parametrização do cliente fica por conta do processo de botão que inicializa o contexto com o endereço multicast, o serviço e assim passamos os argumentos para Button_Run iniciar o processo.
+A parametrização do cliente fica por conta do processo de botão que inicializa o contexto com o endereço _multicast_, o serviço e assim os argumentos são passados para *Button_Run* iniciar o processo.
 
 ```c
 UDP_Sender sender = 
@@ -364,7 +364,7 @@ UDP_Sender sender =
 Button_Run(&sender, &button);
 ```
 ## *led_process*
-A parametrização do servidor fica por conta do processo de LED que inicializa o contexto com o buffer, seu tamanho, a porta onde vai servir e o callback preenchido, e assim passamos os argumentos para LED_Run iniciar o serviço.
+A parametrização do servidor fica por conta do processo de LED que inicializa o contexto com o _buffer_, seu tamanho, a porta do serviço que vai consumir e o _callback_ preenchido, e assim os argumentos são passados para *LED_Run* iniciar o serviço.
 ```c
 UDP_Server receiver = 
 {
@@ -395,7 +395,7 @@ void on_receive_message(const char *buffer, size_t buffer_size, void *data)
 Para compilar e testar o projeto é necessário instalar a biblioteca de [hardware](https://github.com/NakedSolidSnake/Raspberry_lib_hardware) necessária para resolver as dependências de configuração de GPIO da Raspberry Pi.
 
 ## Compilando
-Para facilitar a execução do exemplo, o exemplo proposto foi criado baseado em uma interface, onde é possível selecionar se usará o hardware da Raspberry Pi 3, ou se a interação com o exemplo vai ser através de input feito por FIFO e o output visualizado através de LOG.
+Para facilitar a execução do exemplo, o exemplo proposto foi criado baseado em uma interface, onde é possível selecionar se usará o hardware da Raspberry Pi 3, ou se a interação com o exemplo vai ser através de _input_ feito por FIFO e o _output_ visualizado através de LOG.
 
 ### Clonando o projeto
 Pra obter uma cópia do projeto execute os comandos a seguir:
@@ -407,7 +407,7 @@ $ mkdir build && cd build
 ```
 
 ### Selecionando o modo
-Para selecionar o modo devemos passar para o cmake uma variável de ambiente chamada de ARCH, e pode-se passar os seguintes valores, PC ou RASPBERRY, para o caso de PC o exemplo terá sua interface preenchida com os sources presentes na pasta src/platform/pc, que permite a interação com o exemplo através de FIFO e LOG, caso seja RASPBERRY usará os GPIO's descritos no [artigo](https://github.com/NakedSolidSnake/Raspberry_lib_hardware#testando-a-instala%C3%A7%C3%A3o-e-as-conex%C3%B5es-de-hardware).
+Para selecionar o modo é necessário passar para o cmake uma variável de ambiente chamada de ARCH, e pode-se passar os seguintes valores, PC ou RASPBERRY, para o caso de PC o exemplo terá sua interface preenchida com os sources presentes na pasta src/platform/pc, que permite a interação com o exemplo através de FIFO e LOG, caso seja RASPBERRY usará os GPIO's descritos no [artigo](https://github.com/NakedSolidSnake/Raspberry_lib_hardware#testando-a-instala%C3%A7%C3%A3o-e-as-conex%C3%B5es-de-hardware).
 
 #### Modo PC
 ```bash
@@ -455,7 +455,7 @@ Para simular o botão, o processo em modo PC cria uma FIFO para permitir enviar 
 echo  "0" > /tmp/multicast_fifo
 ```
 
-Output do LOG quando enviado o comando algumas vezez
+Output do LOG quando enviado o comando algumas vezes
 ```bash
 May 23 08:16:19 dell-cssouza LED UDP[31589]: LED Status: On
 May 23 08:16:20 dell-cssouza LED UDP[31589]: LED Status: Off
@@ -470,7 +470,7 @@ Para o modo RASPBERRY a cada vez que o botão for pressionado irá alternar o es
 
 ## Monitorando o tráfego usando o tcpdump
 
-Para monitorar as mensagens que trafegam, precisamos ler uma interface, para saber quais interfaces que o computador possui usamos o comando
+Para monitorar as mensagens que trafegam, é necessário ler uma interface que corresponde ao endereço _multicast_, para saber quais interfaces que o computador possui é utilizado o comando:
 
 ```bash
 $ netstat -ng
@@ -511,7 +511,7 @@ vboxnet0        1      ff02::1:ff00:0
 vboxnet0        1      ff02::1
 vboxnet0        1      ff01::1
 ```
-Como podemos ver temos diversos grupos multicast disponíveis, no caso dessa máquina em questão podemos verificar que existe o endereço do grupo selecionado para a aplicação na inteface enp0s31f6 com o endereço 239.192.1.1
+Como é possível ver existem diversos grupos _multicast_ disponíveis, no caso dessa máquina em questão podemos verificar que existe o endereço do grupo selecionado para a aplicação na inteface enp0s31f6 com o endereço 239.192.1.1
 
 O tcpdump possui opções que permite a visualização dos dados, não irei explicar tudo, fica de estudo para quem quiser saber mais sobre a ferramenta. Executando o comando podemos ver todas as mensagens de multicast
 
@@ -519,31 +519,30 @@ O tcpdump possui opções que permite a visualização dos dados, não irei expl
 sudo tcpdump -i enp0s31f6 -nnSX "multicast"
 ```
 
-Após executar o comando o tcpdump ficará fazendo sniffing da interface, tudo o que for trafegado nessa interface será apresentado, dessa forma enviamos um comando e veremos a seguinte saída:
+Após executar o comando o tcpdump ficará fazendo _sniffing_ da interface, tudo o que for trafegado nessa interface será apresentado, dessa forma enviando um comando e é possível ver a seguinte saída:
 ```bash
 08:21:58.903735 IP 192.168.0.140.38455 > 239.192.1.1.1234: UDP, length 6
 	0x0000:  4500 0022 e013 4000 0111 e7c1 c0a8 008c  E.."..@.........
 	0x0010:  efc0 0101 9637 04d2 000e b215 4c45 4420  .....7......LED.
 	0x0020:  4f4e                                     ON
 ```
-Podemos ver que não há o processo de handshake somente o envio da mensagem, como descrito a seguir:
 
-* No instante 08:21:58.903735 IP 192.168.0.140.38455 > 239.192.1.1.1234 o cliente envia uma mensagem para o server via multicast 
+* No instante **08:21:58.903735 IP 192.168.0.140.38455 > 239.192.1.1.1234** o cliente envia uma mensagem para o servidor via _multicast_
 
 ## Testando conexão com o servidor via netcat
-A aplicação realiza a comunicação entre processos locais, para testar uma comunicação remota usaremos o netcat que permite se conectar de forma prática ao servidor e enviar os comandos. Para se conectar basta usar o seguinte comando:
+A aplicação realiza a comunicação entre processos locais, para testar uma comunicação remota é usado o netcat que permite se conectar de forma prática ao servidor e enviar os comandos. Para se conectar basta usar o seguinte comando:
 
 ```bash
 nc -u ip port
 ```
 
-Como descrito no comando ip usaremos o ip de multicast apresentado na interface enp0s31f6 que é o IP 239.192.1.1, então o comando fica
+Como descrito no comando netstat é usado o ip de _multicast_ apresentado na interface enp0s31f6 que é o IP 239.192.1.1, então o comando fica
 
 ```bash
 echo -e "LED ON" | nc -u 239.192.1.1 1234
 ```
 
-E enviamos o comando LED ON, se visualizar no log irá apresentar que o comando foi executado, para monitorar com o tcpdump basta mudar a interface
+É enviado o comando LED ON, se visualizar no log irá apresentar que o comando foi executado, para monitorar com o tcpdump basta mudar a interface
 
 ## Matando os processos
 Para matar os processos criados execute o script kill_process.sh
@@ -553,7 +552,7 @@ $ ./kill_process.sh
 ```
 
 ## Conclusão
-O multicast é uma boa solução para enviar mensagens de uma única vez para os interessados, diferente do broadcast somente os registrados irão receber as mensagens, evitando assim o congestionamento do tráfego.
+O _multicast_ é uma boa solução para enviar mensagens de uma única vez para os interessados, diferente do _broadcast_ somente os registrados irão receber as mensagens, evitando assim o congestionamento do tráfego, essa forma de envio se assemelha ao padrão arquitetural _publish–subscribe_ como por exemplo o MQTT.
 
 
 ## Referência
